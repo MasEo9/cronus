@@ -6,6 +6,8 @@ package cmd
 import (
 	"fmt"
 	"time"
+	"errors"
+	"database/sql"
 
 	"github.com/spf13/cobra"
 )
@@ -13,13 +15,17 @@ import (
 // statusCmd represents the status command
 var statusCmd = &cobra.Command{
 	Use:   "status",
-	Short: "A brief description of your command",
+	Short: "Check the elapsed time of an actively running project",
 	Run: func(cmd *cobra.Command, args []string) {
 		projectName, _ := cmd.Flags().GetString("project")
 
 		s, err := appDB.GetActiveSession(projectName)
 		if err != nil {
-			fmt.Println("Unable to get active session %w", err)
+			if errors.Is(err, sql.ErrNoRows) {
+				fmt.Printf("There is no active session running for project '%s'.\n", projectName)
+				return
+			}
+			fmt.Printf("Database error while checking session: %v\n", err)
 			return
 		}
 

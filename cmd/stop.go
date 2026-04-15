@@ -26,9 +26,9 @@ var stopCmd = &cobra.Command{
 		s.TimeEnd = time.Now()
 		elapsedDuration := s.CalculateElapsed()
 
-		appDB.StopSession(s.TimeEnd, elapsedDuration, float32(elapsedDuration.Hours()), s.ID)
+		err = appDB.StopSession(s.TimeEnd, elapsedDuration, float32(elapsedDuration.Hours()), s.ID)
 		if err != nil {
-			fmt.Println("Unable to end session %w", err)
+			fmt.Printf("Unable to end session %v\n", err)
 			return
 		}
 		fmt.Printf("Session ended at: %s, elapsed time: %f minutes\n", s.TimeEnd.Format(time.Kitchen), elapsedDuration.Minutes())
