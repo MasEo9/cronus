@@ -31,7 +31,7 @@ var stopCmd = &cobra.Command{
 			fmt.Printf("Unable to end session %v\n", err)
 			return
 		}
-		fmt.Printf("Session ended at: %s, elapsed time: %f minutes\n", s.TimeEnd.Format(time.Kitchen), elapsedDuration.Minutes())
+		fmt.Printf("Session ended at: %s, elapsed time: %s\n", s.TimeEnd.Format(time.Kitchen), elapsedDuration.Round(time.Second))
 	},
 }
 
