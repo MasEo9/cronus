@@ -51,7 +51,6 @@ func (db *CronusDB) GetActiveSession(project_name string) (models.Session, error
 	err := db.db.QueryRow(`SELECT id, time_start FROM sessions 
 		WHERE project_name = ? AND time_end IS NULL ORDER BY id DESC;`, project_name).Scan(&s.ID, &s.TimeStart)
 
-	fmt.Println("Active Session", s)
 	return s, err
 }
 
