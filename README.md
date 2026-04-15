@@ -1,7 +1,7 @@
 # Cronus
 Cronus is a lightweight, fast command-line interface (CLI) time-tracking tool built in Go. It uses a SQLite database for additional analysis and summary.
 
-Named after the Titan [Cronus](https://en.wikipedia.org/wiki/Cronus) - the maintainer of the cycles of seasons and periods of time. The stream of time devours us all.
+Named after the Titan [Cronus](https://en.wikipedia.org/wiki/Cronus) - the maintainer of the cycles of seasons and periods of time. **The stream of time devours us all.**
 
 ## Features
 
