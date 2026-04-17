@@ -6,8 +6,6 @@ package cmd
 import (
 	"fmt"
 	"time"
-	"errors"
-	"database/sql"
 
 	"github.com/spf13/cobra"
 )
@@ -19,20 +17,40 @@ var statusCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		projectName, _ := cmd.Flags().GetString("project")
 
-		s, err := appDB.GetActiveSession(projectName)
+		sessions, err := appDB.GetActiveSession()
 		if err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
-				fmt.Printf("There is no active session running for project '%s'.\n", projectName)
-				return
-			}
-			fmt.Printf("Database error while checking session: %v\n", err)
+			fmt.Printf("Database error while checking sessions: %v\n", err)
 			return
 		}
 
-		s.TimeEnd = time.Now()
-		elapsedDuration := s.CalculateElapsed()
+		if len(sessions) == 0 {
+			fmt.Println("There are no active sessions currently running.")
+			return
+		}
 
-		fmt.Printf("Current Session time elapsed: %s, Session started at: %s\n", elapsedDuration.Round(time.Second), s.TimeStart.Format(time.Kitchen))
+		foundTargetProject := false
+
+		for _, s := range sessions {
+			// project name is passed in and the project exists and is found (data = flag)
+			if projectName != "Unnamed" && s.ProjectName != projectName {
+				continue
+			}
+
+
+			foundTargetProject = true
+			s.TimeEnd = time.Now()
+			elapsedDuration := s.CalculateElapsed()
+
+			fmt.Printf("[%s] time elapsed: %s, session started at: %s\n",
+				s.ProjectName,
+				elapsedDuration.Round(time.Second),
+				s.TimeStart.Format(time.Kitchen))
+		}
+
+		// no found project and no flag
+		if !foundTargetProject && projectName != "Unnamed" {
+			fmt.Printf("There is no active session running for project '%s'.\n", projectName)
+		}
 	},
 }
 

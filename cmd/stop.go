@@ -16,22 +16,34 @@ var stopCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		projectName, _ := cmd.Flags().GetString("project")
 
-		s, err := appDB.GetActiveSession(projectName)
+		sessions, err := appDB.GetActiveSession()
 		if err != nil {
-			fmt.Println("Unable to get active session %w", err)
+			fmt.Printf("Database error while checking sessions: %v\n", err)
 			return
 		}
-		fmt.Println("Current active session id", s.ID)
 
-		s.TimeEnd = time.Now()
-		elapsedDuration := s.CalculateElapsed()
-
-		err = appDB.StopSession(s.TimeEnd, elapsedDuration, float32(elapsedDuration.Hours()), s.ID)
-		if err != nil {
-			fmt.Printf("Unable to end session %v\n", err)
+		if len(sessions) == 0 {
+			fmt.Println("There are no active sessions currently running.")
 			return
 		}
-		fmt.Printf("Session ended at: %s, elapsed time: %s\n", s.TimeEnd.Format(time.Kitchen), elapsedDuration.Round(time.Second))
+
+		for _, s := range sessions {
+			// project name is passed in and the project exists and is found (data = flag)
+			if s.ProjectName != projectName {
+				continue
+			}
+
+			s.TimeEnd = time.Now()
+			elapsedDuration := s.CalculateElapsed()
+
+			err = appDB.StopSession(s.TimeEnd, elapsedDuration, float32(elapsedDuration.Hours()), s.ID)
+			if err != nil {
+				fmt.Printf("Unable to end session %v\n", err)
+				return
+			}
+
+			fmt.Printf("Session ended at: %s, elapsed time: %s\n", s.TimeEnd.Format(time.Kitchen), elapsedDuration.Round(time.Second))
+		}
 	},
 }
 
