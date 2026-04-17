@@ -38,6 +38,11 @@ cronus start -p "Project"
 cronus status -p "Project"
 ```
 
+**Check the status of all active projects:**
+```bash
+cronus status
+```
+
 **Stop tracking and save the session:**
 ```bash
 cronus stop -p "Project"
