@@ -43,15 +43,26 @@ func (db *CronusDB) InsertSession(name string, date string, timeStart time.Time)
 	return err
 }
 
-func (db *CronusDB) GetActiveSession(project_name string) (models.Session, error) {
+func (db *CronusDB) GetActiveSession() ([]models.Session, error) {
 	// data is saved in this var
-	var s models.Session
+	var sessions []models.Session
 
 	// scan binds the output values back to the model through a pointer
-	err := db.db.QueryRow(`SELECT id, time_start FROM sessions 
-		WHERE project_name = ? AND time_end IS NULL ORDER BY id DESC;`, project_name).Scan(&s.ID, &s.TimeStart)
+	query := `SELECT id, time_start, project_name FROM sessions 
+		WHERE time_end IS NULL ORDER BY id DESC;`
+	rows, err := db.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
-	return s, err
+	for rows.Next() {
+		s := &models.Session{}
+		rows.Scan(&s.ID, &s.TimeStart, &s.ProjectName)
+		sessions = append(sessions, *s)
+	}
+
+	return sessions, err
 }
 
 func (db *CronusDB) StopSession(timeStop time.Time, timeElapsed time.Duration, hours float32, id int) error {
