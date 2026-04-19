@@ -21,6 +21,7 @@ func main() {
 		os.Exit(1)
 	}
 	dbInstance.SessionTableCreate()
+	dbInstance.ProjectTableCreate()
 	cmd.SetDB(dbInstance)
 	cmd.Execute()
 }

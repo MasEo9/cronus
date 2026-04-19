@@ -22,8 +22,12 @@ func New(dbPath string) (*CronusDB, error) {
 	return &CronusDB{db: conn}, nil
 }
 
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//	 TABLE CREATION
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 func (db *CronusDB) SessionTableCreate() error {
-	createTableQuery := `CREATE TABLE IF NOT EXISTS sessions (
+	createSessionTableQuery := `CREATE TABLE IF NOT EXISTS sessions (
 			id INTEGER PRIMARY KEY AUTOINCREMENT, 
 			project_name TEXT NOT NULL, 
 			date TEXT NOT NULL, 
@@ -32,16 +36,62 @@ func (db *CronusDB) SessionTableCreate() error {
 			elapsed_time REAL, 
 			hours REAL
 	);`
-	_, err := db.db.Exec(createTableQuery)
+	_, err := db.db.Exec(createSessionTableQuery)
 	return err
 }
 
-func (db *CronusDB) InsertSession(name string, date string, timeStart time.Time) error {
+func (db *CronusDB) ProjectTableCreate() error {
+	createProjectTableQuery := `CREATE TABLE IF NOT EXISTS projects (
+			id INTEGER PRIMARY KEY AUTOINCREMENT, 
+			project_name TEXT NOT NULL 
+	);`
+	_, err := db.db.Exec(createProjectTableQuery)
+	return err
+}
 
-	_, err := db.db.Exec(`INSERT INTO sessions(project_name, date, time_start) VALUES(?,?,?);`, name, date, timeStart)
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//	PROJECT QUERIES
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+func (db *CronusDB) InsertProject(name string) error {
+
+	_, err := db.db.Exec(`INSERT INTO projects(project_name) VALUES(?);`, name)
 
 	return err
 }
+
+func (db *CronusDB) ListProjects() ([]models.Project, error) {
+	var projects []models.Project
+
+	// scan binds the output values back to the model through a pointer
+	query := `SELECT id, project_name FROM projects ORDER BY id ASC;`
+	rows, err := db.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		s := &models.Project{}
+		rows.Scan(&s.ID, &s.ProjectName)
+		projects = append(projects, *s)
+	}
+
+	return projects, err
+}
+
+func (db *CronusDB) SearchProjects(projectName string) (models.Project, error) {
+	var projects models.Project
+
+	query := `SELECT project_name FROM projects WHERE project_name = ?;`
+	p := db.db.QueryRow(query, projectName)
+	p.Scan(&projects.ProjectName)
+
+	return projects, nil
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//		SESSION QUERIES
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 func (db *CronusDB) GetActiveSession() ([]models.Session, error) {
 	// data is saved in this var
@@ -63,6 +113,13 @@ func (db *CronusDB) GetActiveSession() ([]models.Session, error) {
 	}
 
 	return sessions, err
+}
+
+func (db *CronusDB) InsertSession(name string, date string, timeStart time.Time) error {
+
+	_, err := db.db.Exec(`INSERT INTO sessions(project_name, date, time_start) VALUES(?,?,?);`, name, date, timeStart)
+
+	return err
 }
 
 func (db *CronusDB) StopSession(timeStop time.Time, timeElapsed time.Duration, hours float32, id int) error {

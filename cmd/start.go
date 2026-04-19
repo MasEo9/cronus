@@ -24,7 +24,7 @@ var startCmd = &cobra.Command{
 
 		err := appDB.InsertSession(projectName, newSession.Date, newSession.TimeStart)
 		if err != nil {
-			fmt.Println("Unable to insert new session %v\n", err)
+			fmt.Printf("Unable to insert new session %v\n", err)
 			return 
 		}
 		fmt.Printf("Started tracking project %s at %s\n", projectName, newSession.TimeStart.Format(time.Kitchen))

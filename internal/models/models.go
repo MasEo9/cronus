@@ -14,6 +14,16 @@ type Session struct {
 	Hours       float32
 }
 
+type Project struct {
+	ID          int
+	ProjectName string
+}
+
+type projectFlow struct {
+	choices  []string
+	cursor   int
+	selected map[int]struct{}
+}
 
 func (s *Session) CalculateElapsed() time.Duration {
 	s.ElapsedTime = s.TimeEnd.Sub(s.TimeStart)
