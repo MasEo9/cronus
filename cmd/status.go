@@ -57,5 +57,5 @@ var statusCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(statusCmd)
 
-	statusCmd.Flags().StringP("project", "p", "Unnamed", "Name of the project to start")
+	statusCmd.Flags().StringP("project", "p", "Unnamed", "Name of the project")
 }
