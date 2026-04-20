@@ -31,6 +31,16 @@ You can then move the `cronus` binary to a directory in your system's `PATH` (e.
 
 Cronus uses the `-p` or `--project` flag to identify which project you are tracking.
 
+**Add a project:**
+```bash
+cronus project add -p "Project"
+```
+
+**List all projects:**
+```bash
+cronus project
+```
+
 **Start tracking a project:**
 ```bash
 cronus start -p "Project"
@@ -75,7 +85,7 @@ If you want to view your raw data, export it, or run custom analytics, you can e
 
 3. Run a SQL query to see all of your tracked sessions:
    ```sqlite
-   sqlite> SELECT * FROM sessions;
+   sqlite> SELECT s.*, p.project_name FROM sessions s LEFT JOIN projects p on p.id = s.project_id;
    ```
 
 **Example Output:**
