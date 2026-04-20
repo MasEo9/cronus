@@ -17,12 +17,19 @@ var startCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		projectName, _ := cmd.Flags().GetString("project")
 
+		p, err := appDB.SearchProjects(projectName)
+		if p.ProjectName == projectName {
+			fmt.Printf("[%s] project exists\n", p.ProjectName)
+		} else {
+			fmt.Printf("[%s] project does not exist\n", projectName)
+		}
+
 		newSession := models.Session{
 			Date: time.Now().Format("2006.01.02"),
 		}
 		newSession.TimeStart = time.Now()
 
-		err := appDB.InsertSession(projectName, newSession.Date, newSession.TimeStart)
+		err = appDB.InsertSession(p.ID, newSession.Date, newSession.TimeStart)
 		if err != nil {
 			fmt.Printf("Unable to insert new session %v\n", err)
 			return 

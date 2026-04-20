@@ -29,7 +29,7 @@ func New(dbPath string) (*CronusDB, error) {
 func (db *CronusDB) SessionTableCreate() error {
 	createSessionTableQuery := `CREATE TABLE IF NOT EXISTS sessions (
 			id INTEGER PRIMARY KEY AUTOINCREMENT, 
-			project_name TEXT NOT NULL, 
+			project_id INTEGER NOT NULL, 
 			date TEXT NOT NULL, 
 			time_start DATETIME NOT NULL, 
 			time_end DATETIME, 
@@ -82,9 +82,9 @@ func (db *CronusDB) ListProjects() ([]models.Project, error) {
 func (db *CronusDB) SearchProjects(projectName string) (models.Project, error) {
 	var projects models.Project
 
-	query := `SELECT project_name FROM projects WHERE project_name = ?;`
+	query := `SELECT id, project_name FROM projects WHERE project_name = ?;`
 	p := db.db.QueryRow(query, projectName)
-	p.Scan(&projects.ProjectName)
+	p.Scan(&projects.ID, &projects.ProjectName)
 
 	return projects, nil
 }
@@ -98,8 +98,9 @@ func (db *CronusDB) GetActiveSession() ([]models.Session, error) {
 	var sessions []models.Session
 
 	// scan binds the output values back to the model through a pointer
-	query := `SELECT id, time_start, project_name FROM sessions 
-		WHERE time_end IS NULL ORDER BY id DESC;`
+	query := `SELECT s.id, s.time_start, p.id as project_id, p.project_name FROM sessions s
+			LEFT JOIN projects p on p.id = s.project_id 
+		WHERE s.time_end IS NULL ORDER BY s.id DESC;`
 	rows, err := db.db.Query(query)
 	if err != nil {
 		return nil, err
@@ -108,16 +109,16 @@ func (db *CronusDB) GetActiveSession() ([]models.Session, error) {
 
 	for rows.Next() {
 		s := &models.Session{}
-		rows.Scan(&s.ID, &s.TimeStart, &s.ProjectName)
+		rows.Scan(&s.ID, &s.TimeStart, &s.ProjectID, &s.ProjectName)
 		sessions = append(sessions, *s)
 	}
 
 	return sessions, err
 }
 
-func (db *CronusDB) InsertSession(name string, date string, timeStart time.Time) error {
+func (db *CronusDB) InsertSession(project_id int, date string, timeStart time.Time) error {
 
-	_, err := db.db.Exec(`INSERT INTO sessions(project_name, date, time_start) VALUES(?,?,?);`, name, date, timeStart)
+	_, err := db.db.Exec(`INSERT INTO sessions(project_id, date, time_start) VALUES(?,?,?);`, project_id, date, timeStart)
 
 	return err
 }

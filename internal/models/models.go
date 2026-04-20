@@ -6,6 +6,7 @@ import (
 
 type Session struct {
 	ID          int
+	ProjectID   int
 	ProjectName string
 	Date        string
 	TimeStart   time.Time

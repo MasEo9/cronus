@@ -28,7 +28,6 @@ var stopCmd = &cobra.Command{
 		}
 
 		for _, s := range sessions {
-			// project name is passed in and the project exists and is found (data = flag)
 			if s.ProjectName != projectName {
 				continue
 			}
