@@ -50,13 +50,19 @@ func (db *CronusDB) ProjectTableCreate() error {
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
 //	PROJECT QUERIES
+//
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-func (db *CronusDB) InsertProject(name string) error {
+func (db *CronusDB) InsertProject(name string) (int, error) {
 
-	_, err := db.db.Exec(`INSERT INTO projects(project_name) VALUES(?);`, name)
+	res, err := db.db.Exec(`INSERT INTO projects(project_name) VALUES(?);`, name)
+	if err != nil {
+		return 0, err
+	}
 
-	return err
+	id, err := res.LastInsertId()
+	return int(id), err
 }
 
 func (db *CronusDB) ListProjects() ([]models.Project, error) {
@@ -83,10 +89,9 @@ func (db *CronusDB) SearchProjects(projectName string) (models.Project, error) {
 	var projects models.Project
 
 	query := `SELECT id, project_name FROM projects WHERE project_name = ?;`
-	p := db.db.QueryRow(query, projectName)
-	p.Scan(&projects.ID, &projects.ProjectName)
+	err := db.db.QueryRow(query, projectName).Scan(&projects.ID, &projects.ProjectName)
 
-	return projects, nil
+	return projects, err
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

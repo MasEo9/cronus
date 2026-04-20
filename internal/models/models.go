@@ -1,5 +1,7 @@
 package models
 
+// domain models, i.e. anything related to database structure
+
 import (
 	"time"
 )
@@ -20,13 +22,8 @@ type Project struct {
 	ProjectName string
 }
 
-type projectFlow struct {
-	choices  []string
-	cursor   int
-	selected map[int]struct{}
-}
-
 func (s *Session) CalculateElapsed() time.Duration {
 	s.ElapsedTime = s.TimeEnd.Sub(s.TimeStart)
 	return s.ElapsedTime
 }
+

@@ -15,7 +15,7 @@ var addCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		projectName, _ := cmd.Flags().GetString("project")
 
-		err := appDB.InsertProject(projectName)
+		_, err := appDB.InsertProject(projectName)
 		if err != nil {
 			fmt.Printf("Unable to insert new project %v\n", err)
 			return
